@@ -14,5 +14,16 @@ public class OperationsWithIntegersAndDoubles {
         BigDecimal amountOfPeople = BigDecimal.valueOf(3);
         BigDecimal chargePerPerson = rideFee.divide(amountOfPeople, RoundingMode.HALF_UP);
         System.out.println(chargePerPerson);
+
+        double d1 = 3.1;
+        double d2 = 1.21;
+
+    //    System.out.println(d1 - d2);              //1.8900000000000001
+        BigDecimal bd3 = BigDecimal.valueOf(3.1).setScale(2);
+        BigDecimal bd4 = BigDecimal.valueOf(1.21).setScale(2);
+
+        System.out.println(bd3.subtract(bd4));  //Check on how we subtract big decimals    //1.89
+
+
     }
 }
