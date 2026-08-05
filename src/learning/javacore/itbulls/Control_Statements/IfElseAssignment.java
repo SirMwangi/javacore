@@ -1,4 +1,4 @@
-package learning.javacore.itbulls.string;
+package learning.javacore.itbulls.Control_Statements;
 
 import java.util.Scanner;
 

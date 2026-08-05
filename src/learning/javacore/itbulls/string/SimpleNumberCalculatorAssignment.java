@@ -1,7 +1,5 @@
 package learning.javacore.itbulls.string;
 
-
-
 public class SimpleNumberCalculatorAssignment {
     public static void main (String[] args) {
         String first = args [0];
