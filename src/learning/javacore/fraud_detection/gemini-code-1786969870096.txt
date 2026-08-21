@@ -1,0 +1,58 @@
+======================================================================================
+ REGION 1: PYTHON DATA SCIENCE PIPELINE (Offline / Batch Environment)
+======================================================================================
+
+ +-----------------------+      +-----------------------+      +-----------------------+
+ |   Raw Data Sources    | ---> | Static Canonical      | ---> | Velocity Feature      |
+ | (PaySim / Kaggle CSV) |      | Mapper (Pandas DF)    |      | Engine (Rolling 24h)  |
+ +-----------------------+      +-----------------------+      +-----------------------+
+                                                                           |
+                                                                           v
+ +-----------------------+      +-----------------------+      +-----------------------+
+ |  [aml_model.onnx]     | <--- | skl2onnx Serializer   | <--- | Anomaly Model Trainer |
+ |  (Binary Model File)  |      | Pipeline              |      | (Isolation Forest)    |
+ +-----------------------+      +-----------------------+      +-----------------------+
+             |
+             |  (Hand-off via File Storage / Docker Build)
+             v
+
+======================================================================================
+ REGION 2: JAVA ENTERPRISE RUNTIME (Spring Boot Service inside Docker Container)
+======================================================================================
+
+   [ External Bank Core System / Frontend ]
+                     |
+                     |  (1) HTTP POST /api/v1/aml/evaluate (JSON Payload)
+                     v
+      +-----------------------------------+
+      | 1. Spring Boot REST Controller    |
+      +-----------------------------------+
+                     |
+                     v
+      +-----------------------------------+
+      | 2. Transaction DTO                |  <-- Encapsulates JSON into Java Record
+      +-----------------------------------+
+                     |
+                     v
+      +-----------------------------------+
+      | 3. Feature Vectorizer Service     |  <-- Transforms DTO fields into float[]
+      +-----------------------------------+
+                     |
+                     v
+      +-----------------------------------+
+      | 4. ONNX Java Engine               |  <-- Executes inference in memory (<5ms)
+      |    (Loaded: aml_model.onnx)       |
+      +-----------------------------------+
+                     |
+                     v
+      +-----------------------------------+
+      | 5. Risk & Decision Engine         |
+      +-----------------------------------+
+        /                               \
+       / (2a) Log Audit                 \ (2b) Return JSON Response
+      v                                  v
+ +-----------------------+      +-----------------------------------+
+ | 6. Compliance Audit   |      | Output Payload:                   |
+ |    DB / Log File      |      | { riskScore: 0.94,                |
+ +-----------------------+      |   action: "FREEZE_INSTANTLY" }    |
+                                +-----------------------------------+
